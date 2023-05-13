@@ -24,3 +24,4 @@ go.work
 .idea
 
 test.db
+url

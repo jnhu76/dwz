@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 	"url/services"
@@ -23,7 +22,6 @@ type Url struct {
 
 func GetUrl(c *gin.Context) {
 	var url Url
-	fmt.Println("hello, ", c.Param("url"))
 
 	if err := DB.Where("shorter_url = ?", c.Param("url")).First(&url).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -43,6 +41,11 @@ func PostUrl(c *gin.Context) {
 	var err error
 
 	c.BindJSON(&origin)
+
+	if services.ParseUrl(origin.Url) {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid url"})
+		return
+	}
 
 	// if err = DB.Where("origin_url = ?", origin.Url).First(&url).Error; err == nil {
 	records := DB.Where("origin_url = ?", origin.Url).First(&url)
