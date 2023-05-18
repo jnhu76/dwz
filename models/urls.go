@@ -42,7 +42,7 @@ func PostUrl(c *gin.Context) {
 
 	c.BindJSON(&origin)
 
-	if services.ParseUrl(origin.Url) {
+	if !services.ParseUrl(origin.Url) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid url"})
 		return
 	}
