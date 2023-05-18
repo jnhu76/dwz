@@ -13,7 +13,7 @@ import (
 func setupRouter() *gin.Engine {
 	router := gin.Default()
 
-	store := persistence.NewInMemoryStore(time.Second)
+	store := persistence.NewInMemoryStore(5 * 60 * time.Second)
 
 	router.GET("/", func(c *gin.Context) {
 		c.String(200, "hello world!")
@@ -21,7 +21,7 @@ func setupRouter() *gin.Engine {
 
 	router.POST("/new", models.PostUrl) // url
 	// router.GET("/:url", models.GetUrl)
-	router.GET("/:url", cache.CachePage(store, time.Minute, models.GetUrl))
+	router.GET("/:url", cache.CachePage(store, 60*time.Minute, models.GetUrl))
 	router.DELETE("/:url", models.DeleteUrl)
 
 	return router
