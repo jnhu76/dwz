@@ -1,36 +1,54 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"time"
-	"url/models"
+	"net/http"
 
-	"github.com/gin-contrib/cache"
-	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-gonic/gin"
+	"github.com/jnhu76/dwz/models"
+	"github.com/jnhu76/dwz/pkg/gredis"
+	"github.com/jnhu76/dwz/pkg/logging"
+	"github.com/jnhu76/dwz/pkg/setting"
+	"github.com/jnhu76/dwz/pkg/util"
+	"github.com/jnhu76/dwz/routers"
 )
 
-func setupRouter() *gin.Engine {
-	router := gin.Default()
-
-	store := persistence.NewInMemoryStore(5 * 60 * time.Second)
-
-	router.GET("/", func(c *gin.Context) {
-		c.String(200, "hello world!")
-	})
-
-	router.POST("/new", models.PostUrl) // url
-	// router.GET("/:url", models.GetUrl)
-	router.GET("/:url", cache.CachePage(store, 60*time.Minute, models.GetUrl))
-	router.DELETE("/:url", models.DeleteUrl)
-
-	return router
+func init() {
+	setting.Setup()
+	models.Setup()
+	logging.Setup()
+	gredis.Setup()
+	util.Setup()
 }
 
+// @title dwz server
+// @version 1.0
+// @description 短网址服务
+// @securitydefinitions.apikey Bearer
+// @in header
+// @name token
+// @termsOfService https://github.com/jnhu76/dwz
+// @license.name MIT
+// @license.url https://github.com/jnhu76/dwz/blob/master/LICENSE
 func main() {
-	router := setupRouter()
+	gin.SetMode(setting.ServerSetting.RunMode)
 
-	models.ConnectDatabase()
+	routersInit := routers.InitRouter()
+	readTimeout := setting.ServerSetting.ReadTimeout
+	writeTimeout := setting.ServerSetting.WriteTimeout
+	endPoint := fmt.Sprintf(":%d", setting.ServerSetting.HttpPort)
+	maxHeaderBytes := 1 << 20
 
-	log.Fatal(router.Run("127.0.0.1:9090"))
+	server := &http.Server{
+		Addr:           endPoint,
+		Handler:        routersInit,
+		ReadTimeout:    readTimeout,
+		WriteTimeout:   writeTimeout,
+		MaxHeaderBytes: maxHeaderBytes,
+	}
+
+	log.Printf("[info] start http server listening %s", endPoint)
+
+	server.ListenAndServe()
 }

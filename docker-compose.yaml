@@ -1,0 +1,43 @@
+version: '3.7'
+services:
+  dwz:
+    build: .
+    container_name: dwz
+    image: dwz
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+      - redis
+  mysql:
+    container_name: mysql
+    image: mysql:8.0
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: dwz
+      MYSQL_USER: dwz_user
+      MYSQL_PASSWORD: dwz_pass
+    volumes:
+      - dbdata:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    links:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - 8001:80
+  redis:
+    container_name: redis
+    image: redis:5
+    ports:
+     - "6379:6379"
+volumes:
+  dbdata:
