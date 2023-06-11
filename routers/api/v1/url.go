@@ -11,8 +11,8 @@ import (
 )
 
 type Url struct {
-	OriginUrl string `json:"origin" binding:"required" valid:"http_url"`
-	// CreatedBy int
+	OriginUrl  string `json:"origin" binding:"required" valid:"http_url"`
+	ShortenUrl string `json:"shorten" bingding:"required"`
 }
 
 // @Summary Hello jwt
@@ -31,8 +31,7 @@ func GetJwt(c *gin.Context) {
 
 // @Summary Create URL
 // @Produce json
-// @Param created_by string true "CreatedBy"
-// @Param url string true "Url"
+// @Param url string true "OriginUrl"
 // @Success 200 {object} app.Response
 // @Failure 500 {object} app.Response
 // @Router /api/v1/add [post]
@@ -70,4 +69,34 @@ func AddUrl(c *gin.Context) {
 	}
 
 	appG.Response(http.StatusOK, e.SUCCESS, "urlService.ShorterUrl")
+}
+
+// @Summary Delete URL
+// @Produce json
+// @Param url path string true "ShortenUrl"
+// @Success 200 {object} app.Response
+// @Failure 500 {object} app.Response
+// @Router /api/v1/{shorten} [delete]
+func DeleteUrl(c *gin.Context) {
+	appG := app.Gin{C: c}
+
+	urlService := url_service.Url_Service{ShorterUrl: c.Param("shaorten")}
+
+	exists, err := urlService.ExistByShort()
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_EXIST_URL_FAIL, nil)
+		return
+	}
+
+	if !exists {
+		appG.Response(http.StatusOK, e.ERROR_NOT_EXIST_URL, nil)
+	}
+
+	err = urlService.Delete()
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_URL_FAIL, nil)
+		return
+	}
+
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }

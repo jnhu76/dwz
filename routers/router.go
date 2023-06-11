@@ -21,6 +21,8 @@ func InitRouter() *gin.Engine {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	apiv1 := r.Group("/api/v1")
+	apiv1.POST("/add", v1.AddUrl)
+	apiv1.DELETE("/:shorten", v1.DeleteUrl)
 	apiv1.Use(jwt.JWT())
 	{
 		// test
