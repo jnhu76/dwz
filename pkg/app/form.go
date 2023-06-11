@@ -24,3 +24,19 @@ func BindAndValid(c *gin.Context, form interface{}) (int, int) {
 
 	return http.StatusOK, e.SUCCESS
 }
+
+func BindAndValidJson(c *gin.Context, json interface{}) (int, int) {
+	err := c.ShouldBindJSON(json)
+
+	if err != nil {
+		return http.StatusBadRequest, e.INVALID_PARAMS
+	}
+
+	validate := validator.New()
+	err = validate.Struct(json)
+	if err != nil {
+		MakeErrors(err.(validator.ValidationErrors))
+		return http.StatusInternalServerError, e.ERROR
+	}
+	return http.StatusOK, e.SUCCESS
+}

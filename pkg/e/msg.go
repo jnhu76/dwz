@@ -7,7 +7,7 @@ var MsgFlags = map[int]string{
 
 	ERROR_EXIST_URL:       "已存在该URL",
 	ERROR_EXIST_URL_FAIL:  "获取已存在URL失败",
-	ERROR_NOT_EXIST_TAG:   "该URL不存在",
+	ERROR_NOT_EXIST_URL:   "该URL不存在",
 	ERROR_GET_URL_FAIL:    "获取URL失败",
 	ERROR_COUNT_URL_FAIL:  "统计URL失败",
 	ERROR_ADD_URL_FAIL:    "新增URL失败",

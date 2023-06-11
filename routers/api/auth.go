@@ -9,7 +9,7 @@ import (
 	"github.com/jnhu76/dwz/pkg/app"
 	"github.com/jnhu76/dwz/pkg/e"
 	"github.com/jnhu76/dwz/pkg/util"
-	"github.com/jnhu76/dwz/service"
+	"github.com/jnhu76/dwz/service/auth_service"
 )
 
 type auth struct {
@@ -40,7 +40,7 @@ func GetAuth(c *gin.Context) {
 		return
 	}
 
-	authService := service.Auth{Username: username, Password: password}
+	authService := auth_service.Auth_Service{Username: username, Password: password}
 	isExist, err := authService.Check()
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_AUTH_CHECK_TOKEN_FAIL, nil)

@@ -6,7 +6,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jnhu76/dwz/pkg/app"
 	"github.com/jnhu76/dwz/pkg/e"
+	"github.com/jnhu76/dwz/pkg/shorten"
+	"github.com/jnhu76/dwz/service/url_service"
 )
+
+type Url struct {
+	OriginUrl string `json:"origin" binding:"required" valid:"http_url"`
+	// CreatedBy int
+}
 
 // @Summary Hello jwt
 // @Produce json
@@ -20,4 +27,47 @@ func GetJwt(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, map[string]string{
 		"Hello": "jwt",
 	})
+}
+
+// @Summary Create URL
+// @Produce json
+// @Param created_by string true "CreatedBy"
+// @Param url string true "Url"
+// @Success 200 {object} app.Response
+// @Failure 500 {object} app.Response
+// @Router /api/v1/add [post]
+func AddUrl(c *gin.Context) {
+	var (
+		appG = app.Gin{C: c}
+		url  Url
+	)
+
+	httpCode, errCode := app.BindAndValidJson(c, &url)
+
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
+	}
+
+	urlService := url_service.Url_Service{OriginUrl: url.OriginUrl}
+	exists, err := urlService.ExistsByOrigin()
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_EXIST_URL_FAIL, nil)
+		return
+	}
+
+	if !exists {
+		appG.Response(http.StatusOK, e.ERROR_NOT_EXIST_URL, nil)
+		return
+	}
+
+	urlService.ShorterUrl = shorten.Shorten(urlService.OriginUrl)
+	urlService.CreatedBy = 1
+
+	if err = urlService.Add(); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_URL_FAIL, nil)
+		return
+	}
+
+	appG.Response(http.StatusOK, e.SUCCESS, "urlService.ShorterUrl")
 }
