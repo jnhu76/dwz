@@ -90,7 +90,7 @@ func (u *Url_Service) DeleteByShortern() error {
 }
 
 func (u *Url_Service) ExistByShort() (bool, error) {
-	return models.ExistUrlByOrigin(u.ShorternUrl)
+	return models.ExistUrlByShortern(u.ShorternUrl)
 }
 
 func (u *Url_Service) ExistsByOrigin() (bool, error) {

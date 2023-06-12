@@ -6,13 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jnhu76/dwz/pkg/app"
 	"github.com/jnhu76/dwz/pkg/e"
-	"github.com/jnhu76/dwz/pkg/logging"
 	"github.com/jnhu76/dwz/pkg/shorten"
 	"github.com/jnhu76/dwz/service/url_service"
 )
 
 type Url struct {
-	OriginUrl  string `json:"origin" binding:"required" valid:"http_url"`
+	OriginUrl  string `json:"origin" binding:"required" validate:"http_url"`
 	ShortenUrl string `json:"shorten" bingding:"required"`
 }
 
@@ -90,7 +89,7 @@ func AddUrl(c *gin.Context) {
 // @Param url path string true "ShortenUrl"
 // @Success 200 {object} app.Response
 // @Failure 500 {object} app.Response
-// @Router /api/v1/{shorten} [delete]
+// @Router /api/v1/{url} [delete]
 func DeleteUrl(c *gin.Context) {
 	appG := app.Gin{C: c}
 
@@ -121,12 +120,11 @@ func DeleteUrl(c *gin.Context) {
 // @Param url path string true "ShortenUrl"
 // @Success 200 {object} app.Response
 // @Failure 500 {object} app.Response
-// @Router /api/v1/{shorten} [get]
+// @Router /api/v1/{url} [get]
 func GetUrl(c *gin.Context) {
 	appG := app.Gin{C: c}
 
 	urlService := url_service.Url_Service{ShorternUrl: c.Param("url")}
-	logging.Info(c.Params)
 
 	exists, err := urlService.ExistByShort()
 
@@ -140,7 +138,6 @@ func GetUrl(c *gin.Context) {
 		return
 	}
 
-	// get by shorten ? id ???
 	url, err := urlService.Get(urlService.ShorternUrl)
 	appG.Response(http.StatusOK, e.SUCCESS, url.OriginUrl)
 	return

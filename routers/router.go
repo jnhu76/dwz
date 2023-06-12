@@ -21,8 +21,8 @@ func InitRouter() *gin.Engine {
 
 	apiv1 := r.Group("/api/v1")
 	apiv1.POST("/add", v1.AddUrl)
-	apiv1.GET("/:shorten", v1.GetUrl)
-	apiv1.DELETE("/:shorten", v1.DeleteUrl)
+	apiv1.GET("/:url", v1.GetUrl)
+	apiv1.DELETE("/:url", v1.DeleteUrl)
 	// apiv1.Use(jwt.JWT())
 	// {
 	// 	// test

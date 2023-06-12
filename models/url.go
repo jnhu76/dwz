@@ -1,14 +1,30 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Url struct {
 	ID          int    `gorm:"primaryKey" json:"id"`
 	OriginUrl   string `json:"origin_url" gorm:"index"`
-	ShorternUrl string `json:"short_url"`
+	ShorternUrl string `json:"shortern_url"`
 	CreatedBy   int    `json:"created_by"`
 
 	Model
+}
+
+func ExistUrlByShortern(shorten string) (bool, error) {
+	var url Url
+	err := db.Where(&Url{ShorternUrl: shorten}).First(&url).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return false, nil
+	}
+
+	if url.ID > 0 {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 // ExistUrlByOrigin checks if a url exists based on origin url
@@ -82,7 +98,7 @@ func GetUrls(creator int) ([]*Url, error) {
 
 // DeleteUrl delete a single url
 func DeleteUrl(shortern string) error {
-	if err := db.Where("short_url = ?", shortern).Delete(&Url{}).Error; err != nil {
+	if err := db.Where("shortern_url = ?", shortern).Delete(&Url{}).Error; err != nil {
 		return err
 	}
 	return nil

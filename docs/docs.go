@@ -52,34 +52,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/jwt": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Hello jwt",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/app.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/app.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/{shorten}": {
+        "/api/v1/{url}": {
             "get": {
                 "summary": "Get URL",
                 "parameters": [
