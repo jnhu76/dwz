@@ -7,12 +7,81 @@ definitions:
       msg:
         type: string
     type: object
+  v1.Url:
+    properties:
+      origin:
+        type: string
+      shorten:
+        type: string
+    required:
+    - origin
+    type: object
 info:
   contact: {}
   description: 短网址服务
   title: dwz server
   version: "1.0"
 paths:
+  /api/v1/{shorten}:
+    delete:
+      parameters:
+      - description: ShortenUrl
+        in: path
+        name: url
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Delete URL
+    get:
+      parameters:
+      - description: ShortenUrl
+        in: path
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Get URL
+  /api/v1/add:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: OriginUrl
+        in: body
+        name: url
+        required: true
+        schema:
+          $ref: '#/definitions/v1.Url'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Create URL
   /api/v1/jwt:
     get:
       produces:

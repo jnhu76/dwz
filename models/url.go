@@ -3,10 +3,10 @@ package models
 import "gorm.io/gorm"
 
 type Url struct {
-	ID         int    `gorm:"primaryKey" json:"id"`
-	OriginUrl  string `json:"origin_url" gorm:"index"`
-	ShorterUrl string `json:"short_url"`
-	CreatedBy  int    `json:"created_by"`
+	ID          int    `gorm:"primaryKey" json:"id"`
+	OriginUrl   string `json:"origin_url" gorm:"index"`
+	ShorternUrl string `json:"short_url"`
+	CreatedBy   int    `json:"created_by"`
 
 	Model
 }
@@ -52,11 +52,21 @@ func GetUrl(id int) (*Url, error) {
 // GetUrl get a url based on short_url
 func GetUrlByShort(short_url string) (*Url, error) {
 	var url Url
-	err := db.Where(&Url{ShorterUrl: short_url}).First(&url).Error
+	err := db.Where(&Url{ShorternUrl: short_url}).First(&url).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
 
+	return &url, nil
+}
+
+// GetShortByOrigin get a shortern url on origin_url
+func GetShortByOrigin(origin_url string) (*Url, error) {
+	var url Url
+	err := db.Where(&Url{OriginUrl: origin_url}).First(&url).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
 	return &url, nil
 }
 
@@ -71,8 +81,8 @@ func GetUrls(creator int) ([]*Url, error) {
 }
 
 // DeleteUrl delete a single url
-func DeleteUrl(id int) error {
-	if err := db.Where("id = ?", id).Delete(Url{}).Error; err != nil {
+func DeleteUrl(shortern string) error {
+	if err := db.Where("short_url = ?", shortern).Delete(&Url{}).Error; err != nil {
 		return err
 	}
 	return nil
@@ -81,9 +91,9 @@ func DeleteUrl(id int) error {
 // AddUrl add a single url
 func AddUrl(data map[string]interface{}) error {
 	url := Url{
-		OriginUrl:  data["origin_url"].(string),
-		ShorterUrl: data["shorter_url"].(string),
-		CreatedBy:  data["created_by"].(int),
+		OriginUrl:   data["origin_url"].(string),
+		ShorternUrl: data["shorter_url"].(string),
+		CreatedBy:   data["created_by"].(int),
 	}
 
 	if err := db.Create(&url).Error; err != nil {

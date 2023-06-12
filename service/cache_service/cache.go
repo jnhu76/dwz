@@ -1,6 +1,7 @@
 package cache_service
 
 import (
+	"crypto/sha256"
 	"strconv"
 	"strings"
 
@@ -16,6 +17,17 @@ type UrlCache struct {
 
 func (u *UrlCache) GetUrlKey() string {
 	return e.CACHE_URL + "_" + u.ShorterUrl
+}
+
+func hash(s string) string {
+	h := sha256.New()
+	h.Write([]byte(s))
+	bs := h.Sum(nil)
+	return string(bs)
+}
+
+func (u *UrlCache) GetUrlOriginKey() string {
+	return e.CACHE_URL + "_" + hash(u.OriginUrl)
 }
 
 func (u *UrlCache) GetUrlsKey() string {

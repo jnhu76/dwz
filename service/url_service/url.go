@@ -10,16 +10,16 @@ import (
 )
 
 type Url_Service struct {
-	ID         int
-	OriginUrl  string
-	ShorterUrl string
-	CreatedBy  int
+	ID          int
+	OriginUrl   string
+	ShorternUrl string
+	CreatedBy   int
 }
 
 func (u *Url_Service) Add() error {
 	url := map[string]interface{}{
 		"origin_url":  u.OriginUrl,
-		"shorter_url": u.ShorterUrl,
+		"shorter_url": u.ShorternUrl,
 		"created_by":  u.CreatedBy,
 	}
 
@@ -31,10 +31,10 @@ func (u *Url_Service) Add() error {
 }
 
 // id or short_url
-func (u *Url_Service) Get() (*models.Url, error) {
+func (u *Url_Service) Get(shorten string) (*models.Url, error) {
 	var cacheUrl *models.Url
 
-	cache := cache_service.UrlCache{ID: u.ID}
+	cache := cache_service.UrlCache{ShorterUrl: u.ShorternUrl}
 	key := cache.GetUrlKey()
 	if gredis.Exists(key) {
 		data, err := gredis.Get(key)
@@ -46,7 +46,7 @@ func (u *Url_Service) Get() (*models.Url, error) {
 		}
 	}
 
-	url, err := models.GetUrl(u.ID)
+	url, err := models.GetUrlByShort(shorten)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (u *Url_Service) GetAll() ([]*models.Url, error) {
 	cache := cache_service.UrlCache{
 		ID:         u.ID,
 		OriginUrl:  u.OriginUrl,
-		ShorterUrl: u.ShorterUrl,
+		ShorterUrl: u.ShorternUrl,
 		Creator:    u.CreatedBy,
 	}
 
@@ -85,14 +85,36 @@ func (u *Url_Service) GetAll() ([]*models.Url, error) {
 	return urls, nil
 }
 
-func (u *Url_Service) Delete() error {
-	return models.DeleteUrl(u.ID)
+func (u *Url_Service) DeleteByShortern() error {
+	return models.DeleteUrl(u.ShorternUrl)
 }
 
 func (u *Url_Service) ExistByShort() (bool, error) {
-	return models.ExistUrlByOrigin(u.ShorterUrl)
+	return models.ExistUrlByOrigin(u.ShorternUrl)
 }
 
 func (u *Url_Service) ExistsByOrigin() (bool, error) {
 	return models.ExistUrlByOrigin(u.OriginUrl)
+}
+
+func (u *Url_Service) GetUrlByOrigin() (*models.Url, error) {
+	var cacheUrl *models.Url
+
+	cache := cache_service.UrlCache{OriginUrl: u.OriginUrl}
+	key := cache.GetUrlOriginKey()
+	if gredis.Exists(key) {
+		data, err := gredis.Get(key)
+		if err != nil {
+			logging.Info(err)
+		} else {
+			json.Unmarshal(data, &cacheUrl)
+			return cacheUrl, nil
+		}
+	}
+	url, err := models.GetShortByOrigin(u.OriginUrl)
+	if err != nil {
+		return nil, err
+	}
+	gredis.Set(key, url, 3600)
+	return url, nil
 }

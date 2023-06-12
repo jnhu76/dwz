@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jnhu76/dwz/pkg/app"
 	"github.com/jnhu76/dwz/pkg/e"
+	"github.com/jnhu76/dwz/pkg/logging"
 	"github.com/jnhu76/dwz/pkg/shorten"
 	"github.com/jnhu76/dwz/service/url_service"
 )
@@ -15,23 +16,28 @@ type Url struct {
 	ShortenUrl string `json:"shorten" bingding:"required"`
 }
 
-// @Summary Hello jwt
-// @Produce json
-// @Security Bearer
-// @Success 200 {object} app.Response
-// @Failure 500 {object} app.Response
-// @Router /api/v1/jwt [get]
-func GetJwt(c *gin.Context) {
-	appG := app.Gin{C: c}
-
-	appG.Response(http.StatusOK, e.SUCCESS, map[string]string{
-		"Hello": "jwt",
-	})
+type AcceptUrl struct {
+	OriginUrl string
 }
 
+// // @Summary Hello jwt
+// // @Produce json
+// // @Security Bearer
+// // @Success 200 {object} app.Response
+// // @Failure 500 {object} app.Response
+// // @Router /api/v1/jwt [get]
+// func GetJwt(c *gin.Context) {
+// 	appG := app.Gin{C: c}
+
+// 	appG.Response(http.StatusOK, e.SUCCESS, map[string]string{
+// 		"Hello": "jwt",
+// 	})
+// }
+
 // @Summary Create URL
+// @Accept json
 // @Produce json
-// @Param url string true "OriginUrl"
+// @Param url body Url true "OriginUrl"
 // @Success 200 {object} app.Response
 // @Failure 500 {object} app.Response
 // @Router /api/v1/add [post]
@@ -55,20 +61,28 @@ func AddUrl(c *gin.Context) {
 		return
 	}
 
-	if !exists {
-		appG.Response(http.StatusOK, e.ERROR_NOT_EXIST_URL, nil)
+	if exists {
+		urlRecord, err := urlService.GetUrlByOrigin()
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_EXIST_URL_FAIL, nil)
+			return
+		}
+		appG.Response(http.StatusOK, e.SUCCESS, urlRecord.ShorternUrl)
 		return
+	} else {
+
+		// else create a new record.
+
+		urlService.ShorternUrl = shorten.Shorten(urlService.OriginUrl)
+		urlService.CreatedBy = 1
+
+		if err = urlService.Add(); err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_ADD_URL_FAIL, nil)
+			return
+		}
+
+		appG.Response(http.StatusOK, e.SUCCESS, urlService.ShorternUrl)
 	}
-
-	urlService.ShorterUrl = shorten.Shorten(urlService.OriginUrl)
-	urlService.CreatedBy = 1
-
-	if err = urlService.Add(); err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_URL_FAIL, nil)
-		return
-	}
-
-	appG.Response(http.StatusOK, e.SUCCESS, "urlService.ShorterUrl")
 }
 
 // @Summary Delete URL
@@ -80,7 +94,9 @@ func AddUrl(c *gin.Context) {
 func DeleteUrl(c *gin.Context) {
 	appG := app.Gin{C: c}
 
-	urlService := url_service.Url_Service{ShorterUrl: c.Param("shaorten")}
+	url := c.Param("url")
+
+	urlService := url_service.Url_Service{ShorternUrl: url}
 
 	exists, err := urlService.ExistByShort()
 	if err != nil {
@@ -92,11 +108,40 @@ func DeleteUrl(c *gin.Context) {
 		appG.Response(http.StatusOK, e.ERROR_NOT_EXIST_URL, nil)
 	}
 
-	err = urlService.Delete()
+	err = urlService.DeleteByShortern()
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_URL_FAIL, nil)
 		return
 	}
 
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
+// @Summary Get URL
+// @Param url path string true "ShortenUrl"
+// @Success 200 {object} app.Response
+// @Failure 500 {object} app.Response
+// @Router /api/v1/{shorten} [get]
+func GetUrl(c *gin.Context) {
+	appG := app.Gin{C: c}
+
+	urlService := url_service.Url_Service{ShorternUrl: c.Param("url")}
+	logging.Info(c.Params)
+
+	exists, err := urlService.ExistByShort()
+
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_EXIST_URL_FAIL, nil)
+		return
+	}
+
+	if !exists {
+		appG.Response(http.StatusNotFound, e.ERROR_EXIST_URL_FAIL, nil)
+		return
+	}
+
+	// get by shorten ? id ???
+	url, err := urlService.Get(urlService.ShorternUrl)
+	appG.Response(http.StatusOK, e.SUCCESS, url.OriginUrl)
+	return
 }
