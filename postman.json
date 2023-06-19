@@ -1,0 +1,79 @@
+{
+	"info": {
+		"_postman_id": "266104bf-7ff8-4785-9558-043e748d3bf6",
+		"name": "dwz",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28064821"
+	},
+	"item": [
+		{
+			"name": "GetOringinUrl",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/api/v1/MiB4svRm",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"MiB4svRm"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PostUrl",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"origin\": \"https://www.bilibili.com/\"}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/add",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteUrl",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/api/v1/MiB4svRm",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"MiB4svRm"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
