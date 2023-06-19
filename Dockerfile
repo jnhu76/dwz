@@ -1,4 +1,4 @@
-FROM golang:latest
+FROM golang:1.20.5-alpine3.18
 
 ENV GOPROXY https://goproxy.cn,direct
 WORKDIR $GOPATH/src/github.com/jnhu76/dwz
